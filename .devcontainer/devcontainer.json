@@ -1,0 +1,15 @@
+{
+    "image": "mcr.microsoft.com/devcontainers/universal:dev-linux",
+    "hostRequirements": {
+      "cpus": 4,
+      "memory": "16gb",
+      "storage": "32gb"
+    },
+    "customizations": {
+      "codespaces": {
+        "openFiles": ["README.md"]
+      }
+    },
+    "forwardPorts": [8080, 8090]
+  }
+  
