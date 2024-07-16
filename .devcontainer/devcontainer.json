@@ -1,5 +1,5 @@
 {
-    "name": "codespaces-default",
+    "name": "default",
     "image": "mcr.microsoft.com/devcontainers/universal:dev-linux",
     "hostRequirements": {
       "cpus": 4,
@@ -7,9 +7,9 @@
       "storage": "32gb"
     },
     "customizations": {
-      "codespaces": {
-        "openFiles": ["README.md"]
-      },
+      // Codespaces-specific configs
+      "codespaces": {},
+      // VSCode-specific configs
       "vscode": {
         "extensions": [],
         "settings": {
@@ -17,6 +17,6 @@
         }
       }      
     },
-    "forwardPorts": [8080, 9090]
+    "forwardPorts": [8080, 9090, 3000]
   }
   
