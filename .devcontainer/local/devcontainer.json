@@ -1,10 +1,10 @@
 {
-    "name": "codespaces-default",
+    "name": "codespaces-local",
     "image": "mcr.microsoft.com/devcontainers/universal:dev-linux",
     "hostRequirements": {
-      "cpus": 4,
-      "memory": "16gb",
-      "storage": "32gb"
+      "cpus": 3,
+      "memory": "8gb",
+      "storage": "10gb"
     },
     "customizations": {
       "codespaces": {
