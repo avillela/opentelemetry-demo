@@ -11,9 +11,11 @@
       "codespaces": {},
       // VSCode-specific configs
       "vscode": {
-        "extensions": [],
+        "extensions": ["ms-azuretools.vscode-docker"],
         "settings": {
-          "workbench.editor.enablePreview": true
+          "workbench.editor.enablePreview": true,
+          "remote.autoForwardPortsSource": "process",
+          "remote.autoForwardPortsFallback": 40
         }
       }      
     },
