@@ -1,4 +1,5 @@
 {
+    "name": "codespaces-default",
     "image": "mcr.microsoft.com/devcontainers/universal:dev-linux",
     "hostRequirements": {
       "cpus": 4,
@@ -10,11 +11,12 @@
         "openFiles": ["README.md"]
       },
       "vscode": {
+        "extensions": [],
         "settings": {
           "workbench.editorAssociations": {
              "README.md": "vscode.markdown.preview.editor"
           }
-        },
+        }
       }      
     },
     "forwardPorts": [8080, 9090]
