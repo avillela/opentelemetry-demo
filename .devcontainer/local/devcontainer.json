@@ -13,9 +13,7 @@
       "vscode": {
         "extensions": [],
         "settings": {
-          "workbench.editorAssociations": {
-             "README.md": "vscode.markdown.preview.editor"
-          }
+          "workbench.editor.enablePreview": true
         }
       }      
     },
