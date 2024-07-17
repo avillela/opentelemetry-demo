@@ -1,5 +1,6 @@
 {
     "name": "default",
+    // To get this to run locally on Apple Silicon: docker pull --platform linux/amd64 <image_name>
     "image": "mcr.microsoft.com/devcontainers/universal:dev-linux",
     "hostRequirements": {
       "cpus": 4,
@@ -19,6 +20,6 @@
         }
       }      
     },
-    "forwardPorts": [8080, 9090, 3000]
+    "forwardPorts": [8080, 9090]
   }
   
