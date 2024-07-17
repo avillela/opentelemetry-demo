@@ -1,7 +1,10 @@
 {
     "name": "default",
     // To get this to run locally on Apple Silicon: docker pull --platform linux/amd64 <image_name>
-    "image": "mcr.microsoft.com/devcontainers/universal:dev-linux",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+      "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+	  },
     "hostRequirements": {
       "cpus": 4,
       "memory": "16gb",
