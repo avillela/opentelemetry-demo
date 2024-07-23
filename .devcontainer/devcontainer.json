@@ -9,30 +9,19 @@
         "dotnetRuntimeVersions": "7.0", 
         "aspNetCoreRuntimeVersions": "7.0"
       },
-      // "ghcr.io/devcontainers/features/hugo:1": {
-      //     "version": "latest"
-      // },
       "ghcr.io/devcontainers/features/node:1": {
           "version": "20",
           "additionalVersions": "18"
       },
-      // "./local-features/nvs": "latest",
       "ghcr.io/devcontainers/features/python:1": {
           "version": "3.12.1",
-          "additionalVersions": "3.11.9",
-          // "installJupyterlab": "true",
-          // "configureJupyterlabAllowOrigin": "*",
-          // "useOryxIfAvailable": "false"
+          "additionalVersions": "3.11.9"
       },
-      // "./local-features/machine-learning-packages": "latest",
       "ghcr.io/devcontainers/features/php:1": {
           "version": "8.3.0",
           "additionalVersions": "8.2.13",
           "installComposer": "true"
       },
-      // "ghcr.io/devcontainers/features/conda:1": {
-      //     "version": "latest"
-      // },
       "ghcr.io/devcontainers/features/ruby:1": {
           "version": "3.3.4",
           "additionalVersions": "3.3.2"
@@ -46,10 +35,6 @@
       "ghcr.io/devcontainers/features/sshd:1": {
           "version": "latest"
       },
-      // "ghcr.io/devcontainers/features/git:1": {
-      //     "version": "latest",
-      //     "ppa": "false"
-      // },
       "ghcr.io/devcontainers/features/git-lfs:1": {
           "version": "latest"
       },
@@ -64,25 +49,13 @@
       },
       "ghcr.io/devcontainers/features/go:1": {
           "version": "latest"
-      },
-      // "./local-features/jekyll": "latest",
-      // "ghcr.io/devcontainers/features/oryx:1": "latest",
-      // "./local-features/setup-user": "latest",
-      // "./local-features/patch-python": {},
-      // "./local-features/patch-conda": {}
+      }
 	  },
     "overrideFeatureInstallOrder": [
-        // "ghcr.io/devcontainers/features/common-utils",
-        // "ghcr.io/devcontainers/features/git",
         "ghcr.io/devcontainers/features/dotnet",
-        // "ghcr.io/devcontainers/features/hugo",
         "ghcr.io/devcontainers/features/node",
-        // "./local-features/nvs",
         "ghcr.io/devcontainers/features/conda",
-        // "./local-features/patch-conda",
         "ghcr.io/devcontainers/features/python",
-        // "./local-features/patch-python",
-        // "./local-features/machine-learning-packages",
         "ghcr.io/devcontainers/features/php",
         "ghcr.io/devcontainers/features/ruby",
         "ghcr.io/devcontainers/features/java",
@@ -91,10 +64,7 @@
         "ghcr.io/devcontainers/features/github-cli",
         "ghcr.io/devcontainers/features/docker-in-docker",
         "ghcr.io/devcontainers/features/kubectl-helm-minikube",
-        "ghcr.io/devcontainers/features/go",
-        // "./local-features/jekyll",
-        // "ghcr.io/devcontainers/features/oryx",
-        // "./local-features/setup-user"
+        "ghcr.io/devcontainers/features/go"
     ],
     "hostRequirements": {
       "cpus": 4,
@@ -112,30 +82,9 @@
           "go.useLanguageServer": true,
           "go.gopath": "/go",
           "python.defaultInterpreterPath": "/home/codespace/.python/current/bin/python3",
-          // "jupyter.kernels.filter": [
-          //     {
-          //         "path": "/opt/conda/bin/python",
-          //         "type": "pythonEnvironment"
-          //     },
-          //     {
-          //         "path": "/usr/local/python/current/bin/python3",
-          //         "type": "pythonEnvironment"
-          //     },
-          //     {
-          //         "path": "/usr/local/python/current/bin/python",
-          //         "type": "pythonEnvironment"
-          //     },
-          //     {
-          //         "path": "/usr/bin/python3",
-          //         "type": "pythonEnvironment"
-          //     },
-          //     {
-          //         "path": "/bin/python3",
-          //         "type": "pythonEnvironment"
-          //     }
-          // ],
           "lldb.executable": "/usr/bin/lldb",
 
+          "terminal.integrated.scrollback": 1000000,
           "workbench.editor.enablePreview": true,
           "remote.autoForwardPortsSource": "process",
           "remote.autoForwardPortsFallback": 40
