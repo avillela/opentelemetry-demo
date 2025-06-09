@@ -1,0 +1,79 @@
+{
+    "name": "default",
+    // "image": "mcr.microsoft.com/devcontainers/php:dev-8-bullseye",
+    "image": "mcr.microsoft.com/devcontainers/java:dev-17-bullseye",
+    "features": {
+      // "ghcr.io/devcontainers-extra/features/gradle-sdkman:2": {},
+      // "ghcr.io/devcontainers-extra/features/maven-sdkman:2": {},
+      "ghcr.io/devcontainers/features/php:1": {},
+      "ghcr.io/devcontainers/features/dotnet:2": {
+      },
+      "ghcr.io/devcontainers/features/node:1": {
+      },
+      "ghcr.io/devcontainers/features/python:1": {
+      },
+      "ghcr.io/devcontainers/features/ruby:1": {
+      },
+      // "ghcr.io/devcontainers/features/java:1": {
+      //     "installGradle": "true",
+      //     "installMaven": "true"
+      // },
+      "ghcr.io/devcontainers/features/sshd:1": {
+          "version": "latest"
+      },
+      "ghcr.io/devcontainers/features/docker-in-docker:2": {
+          "version": "latest"
+      },
+      "ghcr.io/devcontainers/features/go:1": {
+      },
+      "ghcr.io/mpriscella/features/kind:1": {
+      },
+      "ghcr.io/devcontainers-extra/features/kubectl-asdf:2": {}
+
+    },
+    "overrideFeatureInstallOrder": [
+        // "ghcr.io/devcontainers-extra/features/maven-sdkman",
+        // "ghcr.io/devcontainers-extra/features/gradle-sdkman",
+        "ghcr.io/devcontainers/features/php",
+        "ghcr.io/devcontainers/features/dotnet",
+        "ghcr.io/devcontainers/features/node",
+        "ghcr.io/devcontainers/features/python",
+        "ghcr.io/devcontainers/features/ruby",
+        // "ghcr.io/devcontainers/features/java",
+        "ghcr.io/devcontainers/features/sshd",
+        "ghcr.io/devcontainers/features/docker-in-docker",
+        "ghcr.io/devcontainers/features/go",
+        "ghcr.io/mpriscella/features/kind",
+        "ghcr.io/devcontainers-extra/features/kubectl-asdf"
+    ],
+    "hostRequirements": {
+      "cpus": 8,
+      "memory": "16gb",
+      "storage": "32gb"
+    },
+    "remoteEnv": {
+      "PODMAN_USERNS": "keep-id"
+    },
+    "containerUser": "vscode",
+    "customizations": {
+      // Codespaces-specific configs
+      "codespaces": {},
+      // VSCode-specific configs
+      "vscode": {
+        "extensions": ["ms-azuretools.vscode-docker"],
+        "settings": {
+          "go.toolsManagement.checkForUpdates": "local",
+          "go.useLanguageServer": true,
+          "go.gopath": "/go",
+          "python.defaultInterpreterPath": "/home/codespace/.python/current/bin/python3",
+          "lldb.executable": "/usr/bin/lldb",
+  
+          "terminal.integrated.scrollback": 1000000,
+          "workbench.editor.enablePreview": true,
+          "remote.autoForwardPortsSource": "process",
+          "remote.autoForwardPortsFallback": 40
+        }
+      }      
+    },
+    "forwardPorts": [8080, 9090]
+  }

@@ -8,11 +8,23 @@
 ## Note: the spanmetrics exporter must be included in the exporters array
 ## if overriding the traces pipeline.
 ##
-#  exporters:
-#    otlphttp/example:
-#      endpoint: <your-endpoint-url>
-#
-#  service:
-#    pipelines:
-#      traces:
-#        exporters: [spanmetrics, otlphttp/example]
+exporters:
+  otlphttp/dt:
+    endpoint: "https://${DT_ENV_ID}.${DT_ENV_SUFFIX}/api/v2/otlp"
+    headers:
+      Authorization: "Api-Token ${DT_TOKEN}"
+  debug:
+    verbosity: detailed
+
+processors:
+  cumulativetodelta:
+
+service:
+  pipelines:
+    traces:
+      exporters: [spanmetrics, otlp, otlphttp/dt, debug]
+    metrics:
+      processors: [cumulativetodelta, batch]
+      exporters: [otlphttp/dt, otlphttp/prometheus, debug]
+    logs:
+      exporters: [otlphttp/dt, opensearch, debug]
