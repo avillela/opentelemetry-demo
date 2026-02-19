@@ -8,6 +8,164 @@
 ## Note: the spanmetrics exporter must be included in the exporters array
 ## if overriding the traces pipeline.
 ##
+
+receivers:
+  hostmetrics/1m:
+    collection_interval: 1m
+    scrapers:
+      # CPU metrics
+      cpu:
+        metrics:
+          system.cpu.utilization:
+            enabled: true
+          system.cpu.time:
+            enabled: false
+
+      # Memory metrics
+      memory:
+        metrics:
+          system.memory.utilization:
+            enabled: true
+          system.memory.usage:
+            enabled: false
+
+      # Load average metrics
+      load:
+        metrics:
+          system.cpu.load_average.1m:
+            enabled: true
+          system.cpu.load_average.5m:
+            enabled: false
+          system.cpu.load_average.15m:
+            enabled: false
+
+  hostmetrics/5m:
+    collection_interval: 5m
+    scrapers:
+      # CPU metrics
+      cpu:
+        metrics:
+          system.cpu.time:
+            enabled: true
+
+      # Memory metrics
+      memory:
+        metrics:
+          system.memory.usage:
+            enabled: true
+
+      # Paging/Swap metrics
+      paging:
+        metrics:
+          system.paging.usage:
+            enabled: true
+          system.paging.operations:
+            enabled: true
+          system.paging.faults:
+            enabled: true
+
+      # Network metrics
+      network:
+        metrics:
+          system.network.io:
+            enabled: true
+          system.network.packets:
+            enabled: true
+          system.network.errors:
+            enabled: true
+          system.network.connections:
+            enabled: true
+          system.network.dropped:
+            enabled: true
+
+      # Load average metrics
+      load:
+        metrics:
+          system.cpu.load_average.1m:
+            enabled: false
+          system.cpu.load_average.5m:
+            enabled: true
+          system.cpu.load_average.15m:
+            enabled: true
+
+      # Disk metrics
+      disk:
+        metrics:
+          system.disk.io:
+            enabled: true
+          system.disk.operations:
+            enabled: true
+          system.disk.io_time:
+            enabled: true
+          system.disk.operation_time:
+            enabled: true
+          system.disk.pending_operations:
+            enabled: false
+          system.disk.merged:
+            enabled: false
+          system.disk.weighted_io_time:
+            enabled: false
+
+      # Filesystem metrics
+      filesystem:
+        metrics:
+          system.filesystem.usage:
+            enabled: true
+          system.filesystem.utilization:
+            enabled: true
+          system.filesystem.inodes.usage:
+            enabled: true
+
+      # Process count metrics
+      processes:
+        metrics:
+          system.processes.count:
+            enabled: true
+          system.processes.created:
+            enabled: true
+
+      # Per-process metrics
+      process:
+        mute_process_all_errors: true
+        metrics:
+          process.cpu.utilization:
+            enabled: true
+          process.cpu.time:
+            enabled: true
+          process.memory.usage:
+            enabled: true
+          process.memory.virtual:
+            enabled: true
+          process.disk.io:
+            enabled: true
+
+  hostmetrics/1h:
+    collection_interval: 1h
+    scrapers:
+      # Memory metrics
+      memory:
+        metrics:
+          system.memory.limit:
+            enabled: true
+          system.memory.usage:
+            enabled: false
+
+      # CPU metrics
+      cpu:
+        metrics:
+          system.cpu.logical.count:
+            enabled: true
+          system.cpu.physical.count:
+            enabled: true
+          system.cpu.time:
+            enabled: false
+
+      # System metrics
+      system:
+        metrics:
+          system.uptime:
+            enabled: true
+
 exporters:
   otlp_http/dt:
     endpoint: "https://${DT_ENV_ID}.${DT_ENV_SUFFIX}/api/v2/otlp"
@@ -17,14 +175,115 @@ exporters:
     verbosity: detailed
 
 processors:
-  cumulativetodelta: {}
+  filter:
+    metrics:
+      datapoint:
+        - metric.name == "system.cpu.utilization" and attributes["state"] == "idle"
+
+  transform:
+    error_mode: ignore
+    log_statements:
+      - context: resource
+        statements:
+          ## Some magic BS here
+          - set(attributes["host.id"], "${HOST_ID}") where attributes["host.id"] == nil
+          - set(attributes["host.name"], "${HOSTNAME}") where attributes["host.name"] == nil
+
+    metric_statements:
+      - context: resource
+        statements:
+          # Replace spaces in process command line with underscores for cleaner entity IDs
+          - replace_pattern(resource.attributes["process.command_line"], " ", "_")
+          # Convert host.ip from array to first value of array to avoid the metric being dropped
+          - set(resource.attributes["host.ip"], resource.attributes["host.ip"][0]) where resource.attributes["host.ip"] != nil
+          ## Some magic BS here
+          - set(attributes["host.id"], "${HOST_ID}") where attributes["host.id"] == nil
+          - set(attributes["host.name"], "${HOSTNAME}") where attributes["host.name"] == nil
+
+      - context: datapoint
+        statements:
+          # For process.* metrics, keep only the attributes needed by the OpenTelemetry Host extension and remove the rest
+          - delete_key(resource.attributes, "process.cgroup") where IsMatch(metric.name, "^process\\..*")
+          - delete_key(resource.attributes, "process.command") where IsMatch(metric.name, "^process\\..*")
+          - delete_key(resource.attributes, "process.executable.path") where IsMatch(metric.name, "^process\\..*")
+          - delete_key(resource.attributes, "process.owner") where IsMatch(metric.name, "^process\\..*")
+          - delete_key(resource.attributes, "process.parent_pid") where IsMatch(metric.name, "^process\\..*")
+          - delete_key(resource.attributes, "process.pid") where IsMatch(metric.name, "^process\\..*")
+          - delete_key(resource.attributes, "process.command_line") where IsMatch(metric.name, "^process\\..*")
+          - delete_key(resource.attributes, "process.command_args") where IsMatch(metric.name, "^process\\..*")
+
+          # Delete empty device attributes
+          - delete_key(datapoint.attributes, "device") where datapoint.attributes["device"] == ""
+
+          - delete_key(datapoint.attributes, "protocol") where IsMatch(metric.name, "^system\\.network\\..*")
+
+          # Filesystem metrics: Extension uses mountpoint and state, but not device, mode, or type
+          - delete_key(datapoint.attributes, "device") where IsMatch(metric.name, "^system\\.filesystem\\..*")
+          - delete_key(datapoint.attributes, "mode") where IsMatch(metric.name, "^system\\.filesystem\\..*")
+          - delete_key(datapoint.attributes, "type") where IsMatch(metric.name, "^system\\.filesystem\\..*")
+
+      - context: metric
+        statements:
+          - aggregate_on_attributes("sum", ["cpu"]) where metric.name == "system.cpu.utilization"
+
+      - context: datapoint
+        statements:
+          - delete_key(datapoint.attributes, "cpu") where metric.name == "system.cpu.utilization"
+
+      - context: metric
+        statements:
+          # Average remaining datapoints (one per core) into a single host-level value
+          - aggregate_on_attributes("mean") where metric.name == "system.cpu.utilization"
+
+  cumulativetodelta:
+    max_staleness: 25h
+  resourcedetection:
+    detectors: ["system"]
+    system:
+      resource_attributes:
+        host.arch:
+          enabled: true
+        host.id:
+          enabled: true
+        host.name:
+          enabled: true
+        host.ip:
+          enabled: true
+        host.interface:
+          enabled: true
+        host.mac:
+          enabled: true
+        host.cpu.model.name:
+          enabled: true
+        host.cpu.vendor.id:
+          enabled: false
+        host.cpu.family:
+          enabled: false
+        host.cpu.model.id:
+          enabled: false
+        host.cpu.stepping:
+          enabled: false
+        host.cpu.cache.l2.size:
+          enabled: false
+        os.type:
+          enabled: true
+        os.description:
+          enabled: true
+        os.name:
+          enabled: true
+        os.version:
+          enabled: true
+        os.build.id:
+          enabled: true
 
 service:
   pipelines:
     traces:
       exporters: [spanmetrics, otlp_grpc/jaeger, otlp_http/dt, debug]
+
     metrics:
-      processors: [resourcedetection, memory_limiter, cumulativetodelta]
+      receivers: [hostmetrics/1m, hostmetrics/5m, hostmetrics/1h, docker_stats, httpcheck/frontend-proxy, hostmetrics, nginx, otlp, postgresql, redis, spanmetrics]
+      processors: [filter, resourcedetection, transform, memory_limiter, cumulativetodelta]
       # exporters: [otlp_http/dt, otlp_http/prometheus, debug]
       exporters: [otlp_http/dt, debug]
     logs:
@@ -32,6 +291,9 @@ service:
       exporters: [otlp_http/dt, debug]
 
   telemetry:
+    resource:
+      host.name: ${HOSTNAME}
+      host.id: ${HOST_ID}
     metrics:
       readers:
         - periodic:
