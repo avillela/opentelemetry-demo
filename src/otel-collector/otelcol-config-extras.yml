@@ -8,11 +8,36 @@
 ## Note: the spanmetrics exporter must be included in the exporters array
 ## if overriding the traces pipeline.
 ##
-#  exporters:
-#    otlp_http/example:
-#      endpoint: <your-endpoint-url>
-#
-#  service:
-#    pipelines:
-#      traces:
-#        exporters: [spanmetrics, otlp_http/example]
+exporters:
+  otlp_http/dt:
+    endpoint: "https://${DT_ENV_ID}.${DT_ENV_SUFFIX}/api/v2/otlp"
+    headers:
+      Authorization: "Api-Token ${DT_TOKEN}"
+  debug:
+    verbosity: detailed
+
+processors:
+  cumulativetodelta: {}
+
+service:
+  pipelines:
+    traces:
+      exporters: [spanmetrics, otlp_grpc/jaeger, otlp_http/dt, debug]
+    metrics:
+      processors: [resourcedetection, memory_limiter, cumulativetodelta]
+      # exporters: [otlp_http/dt, otlp_http/prometheus, debug]
+      exporters: [otlp_http/dt, debug]
+    logs:
+      # exporters: [otlp_http/dt, opensearch, debug]
+      exporters: [otlp_http/dt, debug]
+
+  telemetry:
+    metrics:
+      readers:
+        - periodic:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                temporality_preference: delta
+                # replace with your observability meta monitoring backend
+                endpoint: http://${env:OTEL_COLLECTOR_HOST}:${env:OTEL_COLLECTOR_PORT_HTTP}
