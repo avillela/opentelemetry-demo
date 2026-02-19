@@ -10,6 +10,7 @@
 ##
 
 receivers:
+
   hostmetrics/1m:
     collection_interval: 1m
     scrapers:
@@ -182,12 +183,13 @@ processors:
 
   transform:
     error_mode: ignore
+
     log_statements:
       - context: resource
         statements:
           ## Some magic BS here
           - set(attributes["host.id"], "${HOST_ID}") where attributes["host.id"] == nil
-          - set(attributes["host.name"], "${HOSTNAME}") where attributes["host.name"] == nil
+          # - set(attributes["host.name"], "${HOSTNAME}") where attributes["host.name"] == nil
 
     metric_statements:
       - context: resource
@@ -198,7 +200,7 @@ processors:
           - set(resource.attributes["host.ip"], resource.attributes["host.ip"][0]) where resource.attributes["host.ip"] != nil
           ## Some magic BS here
           - set(attributes["host.id"], "${HOST_ID}") where attributes["host.id"] == nil
-          - set(attributes["host.name"], "${HOSTNAME}") where attributes["host.name"] == nil
+          # - set(attributes["host.name"], "${HOSTNAME}") where attributes["host.name"] == nil
 
       - context: datapoint
         statements:
@@ -237,8 +239,13 @@ processors:
 
   cumulativetodelta:
     max_staleness: 25h
-  resourcedetection:
-    detectors: ["system"]
+
+  resourcedetection/system:
+    detectors: ["env", "docker", "system"]
+    docker:
+      resource_attributes:
+        container.name:
+          enabled: true
     system:
       resource_attributes:
         host.arch:
@@ -246,7 +253,7 @@ processors:
         host.id:
           enabled: true
         host.name:
-          enabled: true
+          enabled: false
         host.ip:
           enabled: true
         host.interface:
@@ -287,6 +294,7 @@ service:
       # exporters: [otlp_http/dt, otlp_http/prometheus, debug]
       exporters: [otlp_http/dt, debug]
     logs:
+      processors: [resourcedetection, transform, memory_limiter]
       # exporters: [otlp_http/dt, opensearch, debug]
       exporters: [otlp_http/dt, debug]
 
