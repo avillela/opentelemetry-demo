@@ -181,15 +181,15 @@ processors:
       datapoint:
         - metric.name == "system.cpu.utilization" and attributes["state"] == "idle"
 
-  transform:
+  transform/dt_hostmon:
     error_mode: ignore
 
-    log_statements:
+    trace_statements: &dt_hostmon
       - context: resource
         statements:
-          ## Some magic BS here
-          - set(attributes["host.id"], "${HOST_ID}") where attributes["host.id"] == nil
-          # - set(attributes["host.name"], "${HOSTNAME}") where attributes["host.name"] == nil
+          - set(attributes["host.id"], attributes["host.name"]) where attributes["host.id"] == nil
+
+    log_statements: *dt_hostmon
 
     metric_statements:
       - context: resource
@@ -199,7 +199,7 @@ processors:
           # Convert host.ip from array to first value of array to avoid the metric being dropped
           - set(resource.attributes["host.ip"], resource.attributes["host.ip"][0]) where resource.attributes["host.ip"] != nil
           ## Some magic BS here
-          - set(attributes["host.id"], "${HOST_ID}") where attributes["host.id"] == nil
+          - set(attributes["host.id"], attributes["host.name"]) where attributes["host.id"] == nil
           # - set(attributes["host.name"], "${HOSTNAME}") where attributes["host.name"] == nil
 
       - context: datapoint
@@ -242,10 +242,10 @@ processors:
 
   resourcedetection/system:
     detectors: ["env", "docker", "system"]
-    docker:
-      resource_attributes:
-        container.name:
-          enabled: true
+    # docker:
+    #   resource_attributes:
+    #     container.name:
+    #       enabled: true
     system:
       resource_attributes:
         host.arch:
@@ -286,22 +286,23 @@ processors:
 service:
   pipelines:
     traces:
+      processors: [resourcedetection, memory_limiter, transform/sanitize_spans, transform/dt_hostmon]
       exporters: [spanmetrics, otlp_grpc/jaeger, otlp_http/dt, debug]
 
     metrics:
       receivers: [hostmetrics/1m, hostmetrics/5m, hostmetrics/1h, docker_stats, httpcheck/frontend-proxy, hostmetrics, nginx, otlp, postgresql, redis, spanmetrics]
-      processors: [filter, resourcedetection, transform, memory_limiter, cumulativetodelta]
+      processors: [filter, resourcedetection, transform/dt_hostmon, memory_limiter, cumulativetodelta]
       # exporters: [otlp_http/dt, otlp_http/prometheus, debug]
       exporters: [otlp_http/dt, debug]
     logs:
-      processors: [resourcedetection, transform, memory_limiter]
+      processors: [resourcedetection, transform/dt_hostmon, memory_limiter]
       # exporters: [otlp_http/dt, opensearch, debug]
       exporters: [otlp_http/dt, debug]
 
   telemetry:
     resource:
-      host.name: ${HOSTNAME}
-      host.id: ${HOST_ID}
+      host.name: ${env:HOSTNAME}
+      host.id: ${env:HOST_ID}
     metrics:
       readers:
         - periodic:
